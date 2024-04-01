@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<button id="startRecognition">音声認識を開始</button>
+<button id="connectBluetooth">Bluetoothデバイスに接続</button>
+
+<script>
+  let bluetoothDevice;
+  let dataCharacteristic;
+
+  document.getElementById('startRecognition').addEventListener('click', function() {
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = 'ja-JP';
+    recognition.onresult = function(event) {
+      const name = event.results[0][0].transcript;
+      console.log('認識結果:', name);
+      if (bluetoothDevice && dataCharacteristic) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(name);
+        dataCharacteristic.writeValue(data);
+        console.log('データを送信しました');
+      }
+    };
+    recognition.start();
+  });
+
+  document.getElementById('connectBluetooth').addEventListener('click', function() {
+    navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: ['battery_service'] // 使用するサービスに応じて変更
+    })
+    .then(device => {
+      bluetoothDevice = device;
+      return device.gatt.connect();
+    })
+    .then(server => {
+      return server.getPrimaryService('battery_service'); // 使用するサービスに応じて変更
+    })
+    .then(service => {
+      return service.getCharacteristic('battery_level'); // 使用するキャラクタリスティックに応じて変更
+    })
+    .then(characteristic => {
+      dataCharacteristic = characteristic;
+      console.log('Bluetoothデバイスに接続しました');
+    })
+    .catch(error => {
+      console.log('接続に失敗しました:', error);
+    });
+  });
+</script>
+
+</body>
+</html>
