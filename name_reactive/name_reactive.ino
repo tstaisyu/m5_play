@@ -3,7 +3,17 @@
 
 BluetoothSerial SerialBT;
 
-// 笑顔を描画する関数
+// 円弧を描画する関数の定義
+void drawArc(int x, int y, int radius, int startAngle, int endAngle, uint16_t color) {
+  for (int angle = startAngle; angle < endAngle; angle++) {
+    float rad = angle * (PI / 180.0);
+    int xPoint = x + radius * cos(rad);
+    int yPoint = y + radius * sin(rad);
+    M5.Lcd.drawPixel(xPoint, yPoint, color);
+  }
+}
+
+// 笑顔を描画する関数の更新版
 void drawSmileyFace() {
   M5.Lcd.fillScreen(BLACK); // 背景を黒に設定
   M5.Lcd.setTextColor(WHITE); // 文字色を白に設定
@@ -12,9 +22,10 @@ void drawSmileyFace() {
   M5.Lcd.fillCircle(120 - 40, 120 - 20, 10, WHITE); // 左目
   M5.Lcd.fillCircle(120 + 40, 120 - 20, 10, WHITE); // 右目
 
-  // 口を描画（円弧）
-  M5.Lcd.drawArc(120, 160, 40, 0, 180, 10, WHITE); // 口
+  // 口を描画（円弧の近似）
+  drawArc(120, 160, 40, 0, 180, WHITE); // 口
 }
+
 
 void setup() {
   M5.begin();
